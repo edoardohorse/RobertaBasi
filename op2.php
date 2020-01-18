@@ -50,69 +50,54 @@
     </head>
     <body>
         <header>
-            <a href="./index.html">← Torna indietro</a>
+            <a href="./index.html">← Home</a>
         </header>
 
         <main>
-            <!-- <span id="show">Mostra</span> -->
-            
-            <form action="php/main.php" method="GET">
-                <input name="fn" value=2 hidden>
-                
-                
-                <input name="data" id="data" hidden>
-            
-             
+            <h1>Numero clienti vip</h1>
+            <div >
 
+            <table id="tabella">
+            <?php
 
+                global $conn;
+                $stmt = $conn->prepare(NUMERO_ACCESSI_VIP);
+                $stmt->execute();
+                $res = $stmt->get_result();
                 
-             
-                <label for="luogo">Luogo</label>
-                <select name="luogo" id="luogo" style="width: 500px;" required>
-                <option></option>
-                    <?php
-                    
-                    $result = fetch_luoghi();
-                    
-                    foreach($result as $key=>$value){
-                        var_dump($value);
-                        $data = $value['data'];
-                        $luogo = $value['luogo'];
-                        echo "<option value='$luogo'>$luogo $data</option>";
+                $header = true;
+                
+                    echo "<thead>";
+                    foreach($res as $key=>$row){
+                        if($header){
+                            foreach($row as $key=>$value){
+                                echo "<th>$key</th>";
+                            }
+                            echo '</thead>';
+                            echo "<tbody>";
+                            $header = false;
+                        }
+                        echo "<tr>";
+                        $first = true;
+                        $idcliente = null;
+                        $is_abbonato = false;
+                        foreach($row as $key=>$value){
+                            echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";                            
+                        }
+                            
+                        echo "</tr>";
+                        
                     }
-                    ?>
-                </select>
 
-                
-                
-                <input type="submit" id="submit" style="margin-top:20px;">
-            </form>
+                    echo "</tbody>";
+
+                    
+                    
+                ?>
+
+                </table>
+                </div>
 
         </main>
-    </body>
-    <script>
-        $(document).ready(function(){
-    
-            // Initialize select2
-            $("#luogo").select2({
-                placeholder: "Seleziona un evento",
-                allowClear: true,
-                
-            });
-            
-            $("#luogo").on("select2:select", function(e) { 
-                var str = $("#luogo").find(':selected').text()
-                str = str.split(' ')
-                str = str[str.length-1]
-                $("#data").val(str);
-            });
-            
-        }); 
 
-
-
-        // $('#show').on( "click",function(){
-        //     $('#tabella').toggleClass('hidden')
-        // })
-    </script>
 </html>
