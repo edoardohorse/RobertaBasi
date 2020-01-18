@@ -50,110 +50,54 @@
     </head>
     <body>
         <header>
-            <a href="./index.html">← Torna indietro</a>
+            <a href="./index.html">← Home</a>
         </header>
 
         <main>
-            <!-- <span id="show">Mostra</span> -->
-            
-            <form action="php/main.php" method="GET">
-                <input name="fn" value=3 hidden>
+            <h1>Numero clienti abbonati</h1>
+            <div >
+
+            <table id="tabella">
+            <?php
+
+                global $conn;
+                $stmt = $conn->prepare(NUMERO_ABBONATI);
+                $stmt->execute();
+                $res = $stmt->get_result();
                 
+                $header = true;
                 
-                <input name="data" id="data" hidden>
-            
-             
-
-
-                
-             
-                <label for="luogo">Luogo</label>
-                <select name="luogo" id="luogo" style="width: 500px;" required>
-                <option></option>
-                    <?php
-                    
-                    
-                    $result = fetch_luoghi();
-                    foreach($result as $key=>$value){
-                        var_dump($value);
-                        $data = $value['data'];
-                        $luogo = $value['luogo'];
-                        echo "<option value='$luogo'>$luogo $data</option>";
-                    }
-                    ?>
-                </select>
-
-
-                <!-- <label for="artista">artista</label>
-                <select name="artista" id="artista" style="width: 500px;" required>
-                <option></option>
-                    <?php
-                    /*
-                    $result = fetch_artisti();
-                    
-                    foreach($result as $key=>$value){
-                        var_dump($value);
-                        $data = $value['data'];
-                        $luogo = $value['luogo'];
-                        echo "<option value='$idartista'>$luogo $data</option>";
-                    }*/
-                    ?>
-                </select>
--->
-                <div> 
-                    <?php
-                        $result = fetch_artisti();
-                        foreach($result as $key=>$value){
-                            // var_dump($value);
-                            $id = $value["idartista"];
-                            $nome = $value["nome"];
-                            $cognome = $value["cognome"];
-                            echo "<div id=$id hidden>
-                                    <span >$nome $cognome</span><br>
-                                   </div> 
-                                    ";
+                    echo "<thead>";
+                    foreach($res as $key=>$row){
+                        if($header){
+                            foreach($row as $key=>$value){
+                                echo "<th>$key</th>";
+                            }
+                            echo '</thead>';
+                            echo "<tbody>";
+                            $header = false;
                         }
+                        echo "<tr>";
+                        $first = true;
+                        $idcliente = null;
+                        $is_abbonato = false;
+                        foreach($row as $key=>$value){
+                            echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";                            
+                        }
+                            
+                        echo "</tr>";
                         
-                    ?>
+                    }
 
-                </div> 
-                
-                
-                <input type="submit" id="submit" style="margin-top:20px;">
-            </form>
+                    echo "</tbody>";
+
+                    
+                    
+                ?>
+
+                </table>
+                </div>
 
         </main>
-    </body>
-    <script>
-        $(document).ready(function(){
-    
-        
-            $("#luogo").select2({
-                placeholder: "Seleziona un evento",
-                allowClear: true,
-                
-            });
 
-            // $("#artista").select2({
-            //     placeholder: "Seleziona un genere fra questi",
-            //     allowClear: true,
-                
-            // });
-            
-            $("#luogo").on("select2:select", function(e) { 
-                var str = $("#luogo").find(':selected').text()
-                str = str.split(' ')
-                str = str[str.length-1]
-                $("#data").val(str);
-            });
-            
-            
-        }); 
-
-
-
-        // $('#show').on( "click",function(){
-        //     $('#tabella').toggleClass('hidden')
-        // })
-    </script>
 </html>

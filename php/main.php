@@ -190,9 +190,9 @@ function op4(){
 
     global $conn;
 
-        // Prendo tutti i clienti abbonati e vedo quante giostre
-    //  rimanenti hanno ognuno, di queste le sottraggo al numero
-    //  di attrazioni possibili assegnate alla tipoligia
+    // Prendo tutti i clienti abbonati e vedo quante ingressi
+    //  rimanenti ha ognuno, di questi sottraggo il numero di ingressi
+    //  offerti dalla tipologia di abbonamento
 
 }
 
