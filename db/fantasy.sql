@@ -194,6 +194,7 @@ CREATE TABLE `tipologia` (
   `annoCreazione` int(4) NOT NULL,
   `costo` float NOT NULL,
   `ingressiTotali` int(11) NOT NULL
+  `durata` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
