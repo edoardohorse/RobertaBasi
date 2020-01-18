@@ -3,371 +3,224 @@
 include_once('connect.php');
 include_once('query.php');
 
-function fetch_artisti(){
-    global $conn;
-
-    $stmt = $conn->prepare(FETCH_AUTORI);
-    $stmt->execute();
-    return $stmt->get_result();
-}
-
-function fetch_generi(){
-    global $conn;
-
-    $stmt = $conn->prepare(FETCH_GENERI);
-    $stmt->execute();
-    return $stmt->get_result();
-}
-
-function fetch_cantanti(){
-
-    global $conn;
-    $stmt = $conn->prepare(FETCH_CANTANTI);
-    $stmt->execute();
-    return $stmt->get_result();
-    // ADD_CANZONE
-}
-
-function fetch_luoghi(){
-    global $conn;
-    $stmt = $conn->prepare(FETCH_LUOGHI);
-    $stmt->execute();
-    return $stmt->get_result();
-}
-
-function fetch_artisti_evento(){
-    global $conn;
-    $stmt = $conn->prepare(FETCH_ARTISTI_EVENTO);
-    $stmt->bind_param("ss",
-                        $_GET["luogo"],
-                        $_GET["data"]);
-    $stmt->execute();
-    return $stmt->get_result();
-}
-
-function remove_artista_evento(){
-    global $conn;
-    $stmt = $conn->prepare(REMOVE_ARTISTA_EVENTO);
-
-    $stmt->bind_param("iss",
-                        $_GET["idartista"],
-                        $_GET["luogo"],
-                        $_GET["data"]);
-    $stmt->execute();
-}
-
-function add_artista_evento(){
-    global $conn;
-    $stmt = $conn->prepare(ADD_ARTISTA_EVENTO);
-    
-    $stmt->bind_param("iss",
-                        $_GET["idartista"],
-                        $_GET["luogo"],
-                        $_GET["data"]);
-    $stmt->execute();
-}
-
-function update_evento_costo(){
-
-    global $conn;
-    $stmt = $conn->prepare(FETCH_COSTO_FROM_EVENT);
-
-    $stmt->bind_param("ss",
-                        $_GET["luogo"],
-                        $_GET["data"]);
-    $stmt->execute();
-    $stmt->bind_result($result);
-
-    $costo = 0;
-    while($stmt->fetch()){
-        $costo = $result;
-    }
-
-
-    global $conn;
-    $stmt = $conn->prepare(UPDATE_EVENTO_COSTO);
-    $stmt->bind_param("dss",
-                        $costo,
-                        $_GET["luogo"],
-                        $_GET["data"]);
-    $stmt->execute();
-}
-
 function fetch_clienti(){
     global $conn;
-    $stmt = $conn->prepare(FETCH_CLIENTI);
+
+    $stmt = $conn->prepare(PRENDI_CLIENTI);
     $stmt->execute();
-    return $stmt->get_result();
+    return $stmt;
+}
+
+function check_cliente_abbonato($idcliente, &$clienteAbbonato){
+
+    global $conn;
+    $stmt = $conn->prepare(CONTROLLO_CLIENTE_ABBONATO);
+    $stmt->bind_param("s", $idcliente);
+    $stmt->execute();
+
+    $res = $stmt->get_result();
+    foreach($res as $key=>$value){
+        $clienteAbbonato = $value;
+    }
+    // var_dump($clienteAbbonato);
+
+    return ($stmt->affected_rows == 1)? true: false;
+}
+
+function decrementa_ingressi_rimanenti($idcliente){
+    
+    global $conn;
+
+    $stmt = $conn->prepare(DECREMENTA_INGRESSI_RIMANENTI);
+    $stmt->bind_param("s", $idcliente);
+    $stmt->execute();
+
+
+}
+
+function nuovo_biglietto($idcliente, &$biglietto){
+
+    global $conn;
+
+    $stmt = $conn->prepare(NUOVO_BIGLIETTO);
+    $biglietto['validato']  = $biglietto['validato'] == true ? true: false;
+    // var_dump($biglietto);
+    $stmt->bind_param("ssssssbs",
+                    $biglietto["costo"],
+                    $biglietto["dataValidita"],
+                    $biglietto["dataAcquisto"],
+                    $biglietto["oraAcquisto"],
+                    $biglietto["luogoAcquisto"],
+                    $biglietto["tipoPagamento"],
+                    $biglietto["validato"],
+                    $idcliente
+                );
+    $stmt->execute();
+
+    $biglietto['id'] = $stmt->insert_id;
+    // var_dump($biglietto);
+    // var_dump($stmt->insert_id);
+
+}
+
+function nuovo_vip($biglietto, $costo = 10){
+
+    global $conn;
+
+    $stmt = $conn->prepare(NUOVO_VIP);
+    // var_dump($biglietto);
+    $stmt->bind_param("sssss",
+                    $costo,
+                    $biglietto["dataValidita"],
+                    $biglietto["dataAcquisto"],
+                    $biglietto["oraAcquisto"],
+                    $biglietto["id"]
+                );
+    
+    $stmt->execute();
+}
+
+function associa_biglietto_ad_abbonamento($idabbonamento, $idbiglietto){
+    global $conn;
+
+    $stmt = $conn->prepare(ASSOCIO_BIGLIETTO);
+    $stmt->bind_param("ss",
+                    $idabbonamento,
+                    $idbiglietto
+                );
+    $stmt->execute();
+}
+
+function ordina_biglietto($idcliente, &$biglietto){
+
+    global $conn;
+
+    $clienteAbbonato = null;
+
+    // Inserimento dati relativi al biglietto
+    nuovo_biglietto($idcliente, $biglietto);
+
+    // Scelto il cliente vedere se abbonato
+    $is_abbonato = check_cliente_abbonato( $idcliente , $clienteAbbonato );
+    // echo "Abbonato: ". var_dump($is_abbonato);
+    // var_dump($biglietto);
+    // die();
+
+    // Se abbonato decrementa il numero di accessi all'abbonamento
+    if($is_abbonato){    
+        
+        // Se il numero di accessi all'abbonamento sono esauriti restituisci un errore
+        //  quindi domandare se comprare il biglietto al di fuori dell'abbonamento
+        if($clienteAbbonato["ingressiRimanenti"] == 0){
+            location("errore_op1.php");
+            die();
+        }
+        
+        // Altrimenti decremento gli ingresi rimasti
+        decrementa_ingressi_rimanenti($clienteAbbonato["idCliente"], $clienteAbbonato);
+
+        // Associo il biglietto all'abbonamento
+        associa_biglietto_ad_abbonamento($clienteAbbonato["id"], $biglietto["id"]);
+        
+        
+    }
+    
 }
 
 function op1(){
+
     global $conn;
-    $stmt = $conn->prepare(ADD_CANZONE);
-    $stmt->bind_param("sidii",
-                        $_GET["titolo"],
-                        $_GET["anno"],
-                        $_GET["costo"],
-                        $_GET["genere"],
-                        $_GET["autore"]);
-    $stmt->execute();
+
+    $idcliente = $_GET["cliente"];
+    $biglietto = $_GET;
     
-    $idcanzone = $conn->insert_id;
+    $biglietto["quantità"]  = (int) $biglietto["quantità"];
+    $ordine_vip = $biglietto["quantità"] > 15? true : false;
+    
+    
 
-    if(isset($_GET["cantante"])){
-        $cantanti = $_GET["cantante"];
+    // Creo tot biglietti quanto specificato
+    for($i=0;$i < $biglietto["quantità"]; $i++){
 
-        if(count($cantanti) > 0 ){
-            foreach($cantanti as $c){
-                $stmt = $conn->prepare(ADD_SUONA);
-                $stmt->bind_param("ii",$c,$idcanzone);
-                $stmt->execute();
-            }
+
+        ordina_biglietto($idcliente, $biglietto);
+
+        // Se il pagamento coinvolge più di 15 biglietti allora questi hanno 
+        //  l'accesso VIP
+        
+            if($ordine_vip){
+                // Inserimento un nuovo vip con costo uguale a 0
+                nuovo_vip($biglietto, 0);
         }
     }
 
-    if($stmt->affected_rows > 0){
-        echo 'Fatto';
-    }
+
+
+    echo "Pagamento riuscito con successo!";
+
+
+    
+    
+
+
+
+
 }
 
 
 
 function op2(){
-
     global $conn;
-    $stmt = $conn->prepare(FETCH_EVENTO);
-    $stmt->bind_param("ss",
-                        $_GET["luogo"],
-                        $_GET["data"]);
-    $stmt->execute();
-    $res =  $stmt->get_result();
 
-    $header = true;
-
-    echo "<table><thead>";
-    foreach($res as $key=>$row){
-        if($header){
-            foreach($row as $key=>$value){
-                echo "<th>$key</th>";
-            }
-            echo '</thead>';
-            echo "<tbody>";
-            $header = false;
-        }
-        echo "<tr>";
-        foreach($row as $key=>$value){
-                echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";
-            }
-        echo "</tr></table>";
-        
-    }
-
-    echo "</tbody>";
+    // Prendo tutti VIP e vedo quanti accessi alle
+    //  attrazioni hanno fatto
 
 }
+
 function op3(){
 
-    ?>
-        <head>
-            <script src="../js/jquery-3.2.1.min.js"></script>
-        <script src='../js/select2.min.js' type='text/javascript'></script>
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
-        <!-- CSS -->
-        <link href='../css/select2.min.css' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-        </head>
-        <a href="../index.html">← Torna indietro</a>
-        <h1>Artisti di: <?php echo $_GET['luogo']."    ";  echo $_GET['data']; ?></h1>
-        <form method='GET' action='main.php'>
-                <input name='fn' value=3 hidden>
-                <input name='op3' value=a hidden>
-                <input name='luogo' value='<?php echo $_GET['luogo'] ?>' hidden>
-                <input name='data' value='<?php echo $_GET['data'] ?>' hidden>
-                
-
-                <label for="artista">Luogo</label>
-                <select name="idartista" id="artista" style="width: 250px;" required>
-                <option></option>
-                    <?php
-                    
-                    
-                    $result = fetch_artisti();
-                    foreach($result as $key=>$value){
-                        // var_dump($value);
-                        $id = $value['idartista'];
-                        $nome = $value['nome'];
-                        $cognome = $value['cognome'];
-                        echo "<option value='$id'>$nome $cognome</option>";
-                    }
-                    ?>
-                </select>
-
-                <input type="submit" value=Aggiungi>
-        </form>
-        <script>
-        $(document).ready(function(){
-    
-        
-            $("#artista").select2({
-                placeholder: "Seleziona un'arista",
-                allowClear: true,
-                
-            });
-
-            // $("#artista").select2({
-            //     placeholder: "Seleziona un genere fra questi",
-            //     allowClear: true,
-                
-            // });
-            
-            // $("#luogo").on("select2:select", function(e) { 
-            //     var str = $("#luogo").find(':selected').text()
-            //     str = str.split(' ')
-            //     str = str[str.length-1]
-            //     $("#data").val(str);
-            // });
-            
-            
-        }); 
+    global $conn;
 
 
-
-        // $('#show').on( "click",function(){
-        //     $('#tabella').toggleClass('hidden')
-        // })
-    </script>
-    <?php
-
-    $res = fetch_artisti_evento();
-    foreach($res as $key=>$value){
-        // var_dump($value);
-        $luogo = $value['luogo'];
-        $data = $value['data'];
-        $idartista = $value['idartista'];
-        $nome = $value['nome'];
-        $cognome = $value['cognome'];
-        echo "<form method='GET' action='main.php'>
-                <input name='fn' value=3 hidden>
-                <input name='op3' value=r hidden>
-                <input name='luogo' value='$luogo' hidden>
-                <input name='data' value='$data' hidden>
-                <input name='idartista' value='$idartista' hidden>
-
-
-                <span>$nome $cognome</span> <br>
-                <input type='submit' value='Rimuovi'>
-            </form>
-        ";
-    }
+    // Conto quanti clienti hanno l'abbonamento
 
 
 }
 function op4(){
 
     global $conn;
-    $stmt = $conn->prepare(FETCH_MOST_ARTSTI_EVENTO);
-    $stmt->execute();
-    $res = $stmt->get_result();
 
-    $header = true;
-
-    echo "<table><thead>";
-    foreach($res as $key=>$row){
-        if($header){
-            foreach($row as $key=>$value){
-                echo "<th>$key</th>";
-            }
-            echo '</thead>';
-            echo "<tbody>";
-            $header = false;
-        }
-        echo "<tr>";
-        foreach($row as $key=>$value){
-                echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";
-            }
-        echo "</tr>";
-        
-    }
-
-    echo "</tbody></table>";
+        // Prendo tutti i clienti abbonati e vedo quante giostre
+    //  rimanenti hanno ognuno, di queste le sottraggo al numero
+    //  di attrazioni possibili assegnate alla tipoligia
 
 }
+
 function op5(){
 
     global $conn;
-    $stmt = $conn->prepare(FETCH_ALBUM_BEST_SELLER);
-    $stmt->execute();
-    $res = $stmt->get_result();
 
-    $header = true;
-
-    echo "<table><thead>";
-    foreach($res as $key=>$row){
-        if($header){
-            foreach($row as $key=>$value){
-                echo "<th>$key</th>";
-            }
-            echo '</thead>';
-            echo "<tbody>";
-            $header = false;
-        }
-        echo "<tr>";
-        foreach($row as $key=>$value){
-                echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";
-            }
-        echo "</tr>";
-        
-    }
-
-    echo "</tbody></table>";
+    // Aggiunta di un nuovo cliente con abbonamento 
 
 }
 function op6(){
-    $luogo = $_GET["luogo"];
-    $data = $_GET["data"];
-    $i = 0;
 
     global $conn;
-    $stmt = $conn->prepare(ADD_EVENTO);
-    $stmt->bind_param("ssiisi",
-                        $luogo,
-                        $data,
-                        $_GET["numero_ospiti"],
-                        $i,
-                        $_GET["tipo"],
-                        $_GET["cliente"]);
-    $stmt->execute();
-    
-    
-    $artisti = $_GET["artista"];
 
-    
-    foreach($artisti as $a){
-        $stmt = $conn->prepare(ADD_PARTECIPAZIONE);
-        $stmt->bind_param("iss",$a,$luogo,$data);
-        $stmt->execute();
-    }
-
-    update_evento_costo();
-    
-
-    if($stmt->affected_rows > 0){
-        echo 'Fatto';
-    }
-
-
-
+    // Scelto l'abbonato decremento il numero degli ingressi rimasti
 
 }
 
 
 if(isset($_GET["fn"])){
-    // var_dump($_GET);
+
 
     $fn = $_GET["fn"];
     switch($fn){
         case 1:{
+            if(!isset($_GET['abbonamento'])){
+                $_GET['abbonamento'] = true;
+            }
             op1();
             break;}
         case 2:{
