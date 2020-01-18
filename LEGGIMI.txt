@@ -1,0 +1,3 @@
+All'interno della cartella db ci sono 2 file:
+- db.sql 	contiene la struttura delle tabelle
+- seed.sql 	contiene tutti i dati fake su cui sono stati effettuati i test delle operazioni
