@@ -32,7 +32,7 @@ const ASSOCIO_BIGLIETTO = "INSERT INTO inclusione(idAbbonamento, idBiglietto)
 
 // ----------------- OPERAZIONE 2
 
-const NUMERO_ACCESSI_VIP = "SELECT count(*) as Numero_Vip
+const NUMERO_ACCESSI_VIP = "SELECT count(*) as 'Numero Vip'
                                 FROM vip";
 
 // ----------------- FINE OPERAZIONE 2
@@ -40,7 +40,7 @@ const NUMERO_ACCESSI_VIP = "SELECT count(*) as Numero_Vip
 
 // ----------------- OPERAZIONE 3
 
-const NUMERO_ABBONATI = "SELECT count(*) as Numero_clienti_abbonati
+const NUMERO_ABBONATI = "SELECT count(*) as 'Numero clienti abbonati'
                                 FROM cliente c, abbonamentoattivo a
                                 WHERE c.id = a.id";
 
