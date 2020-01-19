@@ -7,20 +7,11 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <!-- Script -->
-        <script src="js/jquery-3.2.1.min.js"></script>
-        <script src='js/select2.min.js' type='text/javascript'></script>
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
-        <!-- CSS -->
-        <link href='css/select2.min.css' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
         
         <title>Operazione 2</title>
         <style>
             body{
-                background-color: bisque;
+                background-color:rgb(196, 221, 255);
                 font-family: sans-serif;
             }
 
@@ -31,12 +22,21 @@
                 position:relative;
             }
 
-            select,label{
-                /* display: block; */
-            }
+            
 
             label{
+                width: auto;
+                text-align: right;
+                display: inline-block;
                 margin-top:15px;
+            }
+
+            input{
+                margin-right: 1em;
+            }
+
+            thead > tr{
+                text-transform: capitalize;
             }
 
             .hidden{
@@ -44,6 +44,15 @@
             }
             #show{
                 cursor:pointer;
+            }
+
+            form{
+                border:1px solid grey;
+                padding: 1em;
+            }
+
+            tr:hover {
+                background-color: rgba(0,0,0,.3);
             }
 
         </style>
@@ -71,6 +80,11 @@
                     foreach($res as $key=>$row){
                         if($header){
                             foreach($row as $key=>$value){
+                                if($key == 'id'){
+                                    $idcliente = $value;
+                                    echo "<th class='hidden'></td>";
+                                    continue;
+                                }
                                 echo "<th>$key</th>";
                             }
                             echo '</thead>';
@@ -82,6 +96,11 @@
                         $idcliente = null;
                         $is_abbonato = false;
                         foreach($row as $key=>$value){
+                            if($key == 'id'){
+                                $idcliente = $value;
+                                echo "<th class='hidden'>$value</td>";
+                                continue;
+                            }
                             echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";                            
                         }
                             

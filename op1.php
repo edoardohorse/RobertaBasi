@@ -7,12 +7,6 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <!-- Script -->
-        <script src="js/jquery-3.2.1.min.js"></script>
-        <script src='js/select2.min.js' type='text/javascript'></script>
-
-        <!-- CSS -->
-        <link href='css/select2.min.css' rel='stylesheet' type='text/css'>
         
         <title>Operazione 1</title>
         <style>
@@ -90,6 +84,11 @@
                     foreach($res as $key=>$row){
                         if($header){
                             foreach($row as $key=>$value){
+                                if($key == 'id'){
+                                    $idcliente = $value;
+                                    echo "<th class='hidden'></td>";
+                                    continue;
+                                }
                                 echo "<th>$key</th>";
                             }
                             echo '</thead>';
@@ -100,12 +99,15 @@
                         $first = true;
                         $idcliente = null;
                         $is_abbonato = false;
+                        // var_dump($row);
                         foreach($row as $key=>$value){
                             if($key == 'id'){
                                 $idcliente = $value;
+                                echo "<th class='hidden'>$value</td>";
+                                continue;
                             }
                             if($key == 'abbonato'){
-                                if($value == 1)
+                                if($value)
                                     echo "<td style='border-left:1px solid black;text-align:center;'>Si</td>";
                                 else
                                     echo "<td style='border-left:1px solid black;text-align:center;'>No</td>";
