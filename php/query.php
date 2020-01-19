@@ -45,5 +45,19 @@ const NUMERO_ABBONATI = "SELECT count(*) as Numero_clienti_abbonati
                                 WHERE c.id = a.id";
 
 // ----------------- FINE OPERAZIONE 3
+
+// ----------------- OPERAZIONE 4
+
+const PRENDI_CLIENTI_ABBONATI = "SELECT c.*, a.id as abbonato
+                                    FROM cliente c, abbonamentoattivo a
+                                    WHERE c.id = a.idCliente";
+
+const N_ACCESSI_USATI         = "SELECT c.nome, c.cognome, (t.ingressiTotali - a.ingressiRimanenti) as 'Accessi eseguiti' 
+                                    FROM cliente c, abbonamentoattivo a, tipologia t
+                                    WHERE c.id = a.idCliente
+                                    AND   a.idtipologia = t.id
+                                    AND   c.id = ?";
+
+// ----------------- FINE OPERAZIONE 4
 ?>
 

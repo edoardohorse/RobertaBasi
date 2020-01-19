@@ -159,33 +159,9 @@ function op1(){
     echo "Pagamento riuscito con successo!";
 
 
-    
-    
-
-
-
-
 }
 
 
-
-function op2(){
-    global $conn;
-
-    // Prendo tutti VIP e vedo quanti accessi alle
-    //  attrazioni hanno fatto
-
-}
-
-function op3(){
-
-    global $conn;
-
-
-    // Conto quanti clienti hanno l'abbonamento
-
-
-}
 function op4(){
 
     global $conn;
@@ -193,6 +169,20 @@ function op4(){
     // Prendo tutti i clienti abbonati e vedo quante ingressi
     //  rimanenti ha ognuno, di questi sottraggo il numero di ingressi
     //  offerti dalla tipologia di abbonamento
+    $idabbonato = $_GET['abbonato'];
+
+
+    
+    $stmt = $conn->prepare(N_ACCESSI_USATI);
+    $stmt->bind_param("s", $idabbonato);
+    $stmt->execute();
+
+    $res = $stmt->get_result();
+
+    foreach($res as $key=>$row){
+        // var_dump($row);
+        echo $row["nome"]." ".$row["cognome"]. " ha effettuato ".$row['Accessi eseguiti']. " accessi.";
+    }
 
 }
 
@@ -223,32 +213,9 @@ if(isset($_GET["fn"])){
             }
             op1();
             break;}
-        case 2:{
-            op2();
-            break;}
-        case 3:{
-            if(isset($_GET['op3']) && $_GET['op3']  == 'r'){
-                remove_artista_evento();
-                update_evento_costo();
 
-                echo "Artista rimosso";
-                $luogo = $_GET['luogo'];
-                $data = $_GET['data'];
-                echo "<p><a href='main.php?fn=3&data=$data&luogo=$luogo' title='Indietro'>Torna agli artisti</a></p>";
-            }
-            else if(isset($_GET['op3']) && $_GET['op3'] == 'a'){
-                add_artista_evento();
-                update_evento_costo();
-
-                echo "Artista aggiunto";
-                $luogo = $_GET['luogo'];
-                $data = $_GET['data'];
-                echo "<p><a href='main.php?fn=3&data=$data&luogo=$luogo' title='Indietro'>Torna agli artisti</a></p>";
-                }
-            
-            else{
-                op3();
-            }
+        case 4:{
+            op4();
             break;}
         case 6:{
             op6();
