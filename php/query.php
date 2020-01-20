@@ -46,6 +46,7 @@ const NUMERO_ABBONATI = "SELECT count(*) as 'Numero clienti abbonati'
 
 // ----------------- FINE OPERAZIONE 3
 
+
 // ----------------- OPERAZIONE 4
 
 const PRENDI_CLIENTI_ABBONATI = "SELECT c.*, a.id as abbonato
@@ -60,6 +61,7 @@ const N_ACCESSI_USATI         = "SELECT c.nome, c.cognome, (t.ingressiTotali - a
 
 // ----------------- FINE OPERAZIONE 4
 
+
 // ----------------- OPERAZIONE 5
 
 const NUOVO_CLIENTE = "INSERT INTO cliente(nome, cognome, sesso, eta)
@@ -72,7 +74,17 @@ const NUOVO_ABBONAMENTO = "INSERT INTO
 
 const TIPOLOGIA_ABBONAMENTI = "SELECT * FROM tipologia";
 
-// ----------------- FINE OPERAZIONE 5
+// ----------------- FINE OPERAZIONE 
+
+
+// ----------------- OPERAZIONE 6
+
+const PRENDI_CLIENTI_ABBONATI2 = "SELECT c.*, a.id as abbonato,
+                        a.ingressiRimanenti as 'Ingressi rimanenti'
+                        FROM cliente c, abbonamentoattivo a
+                        WHERE c.id = a.idCliente";
+
+// ----------------- FINE OPERAZIONE 6
 
 ?>
 

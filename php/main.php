@@ -294,6 +294,26 @@ function op6(){
     global $conn;
 
     // Scelto l'abbonato decremento il numero degli ingressi rimasti
+    $idcliente = $_GET['id'];
+    $idabbonamento = $_GET['abbonato'];
+
+    decrementa_ingressi_rimanenti($idcliente);
+    $biglietto = [];
+    $biglietto["costo"]         = 0;
+    $biglietto["dataValidita"]  = (new DateTime())->format('Y-m-d');
+    $biglietto["dataAcquisto"]  = (new DateTime())->format('Y-m-d');
+    $biglietto["oraAcquisto"]   = (new DateTime())->format('H:i');
+    $biglietto["luogoAcquisto"] = 'Cassa';
+    $biglietto["tipoPagamento"] = 'Carta';
+    $biglietto["validato"]      = true;
+
+    nuovo_biglietto($idcliente, $biglietto);
+    var_dump($biglietto);
+    associa_biglietto_ad_abbonamento($idabbonamento, $biglietto['id']);
+    
+    echo "Fatto";
+    
+    
 
 }
 
