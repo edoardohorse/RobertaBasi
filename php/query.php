@@ -59,5 +59,20 @@ const N_ACCESSI_USATI         = "SELECT c.nome, c.cognome, (t.ingressiTotali - a
                                     AND   c.id = ?";
 
 // ----------------- FINE OPERAZIONE 4
+
+// ----------------- OPERAZIONE 5
+
+const NUOVO_CLIENTE = "INSERT INTO cliente(nome, cognome, sesso, eta)
+                            VALUE(?, ?, ?, ? )";
+                            
+                            
+const NUOVO_ABBONAMENTO = "INSERT INTO
+                    abbonamentoattivo(dataInizio, dataFine, ingressiRimanenti, idCliente, idtipologia)
+                    VALUE(DATE(NOW()), ?, ?, ?, ?)";
+
+const TIPOLOGIA_ABBONAMENTI = "SELECT * FROM tipologia";
+
+// ----------------- FINE OPERAZIONE 5
+
 ?>
 

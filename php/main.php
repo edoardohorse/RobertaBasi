@@ -186,11 +186,107 @@ function op4(){
 
 }
 
-function op5(){
+
+function nuovo_cliente($cliente){
 
     global $conn;
 
-    // Aggiunta di un nuovo cliente con abbonamento 
+    $stmt = $conn->prepare(NUOVO_CLIENTE);
+    $stmt->bind_param("sssd", 
+                        $cliente["nome"],
+                        $cliente["cognome"],
+                        $cliente["sesso"],
+                        $cliente["eta"]
+                    );
+    $stmt->execute();
+
+    return $stmt->insert_id;
+}
+
+function nuovo_abbonamento($idcliente, $tipoabbonamento, $dataFine, $ingressi){
+    global $conn;
+    // var_dump($idcliente, $tipoabbonamento, $ingressi, $dataFine);
+    $stmt = $conn->prepare(NUOVO_ABBONAMENTO);
+    $stmt->bind_param("ssss", 
+                        $dataFine,
+                        $ingressi,
+                        $idcliente,
+                        $tipoabbonamento
+                    );
+    $stmt->execute();
+
+    return $stmt->insert_id;
+}
+
+function tipologie_abbonamento(){
+
+    global $conn;
+
+    $stmt = $conn->prepare(TIPOLOGIA_ABBONAMENTI);
+    $stmt->execute();
+
+    $res = $stmt->get_result();
+
+    $ar = array();
+
+    foreach($res as $key=>$row){
+        array_push($ar, $row);
+    }
+    return $ar;
+}
+
+function op5(){
+
+    global $conn;
+    
+    // var_dump($_GET);
+    // Aggiunta di un nuovo cliente 
+    $idcliente = nuovo_cliente($_GET);
+    
+    // $_GET["abbonamento"] = 2;
+    $scadenza = null;
+    $ingressi = null;
+    
+
+    switch($_GET["abbonamento"]){
+        case 1:{ // Annuale
+            $ingressi = 30;
+            $scadenza = new DateTime('2020-12-31');    
+            break;
+        }
+        
+        case 2:{ // Quadimestrale
+            $ingressi = 15;
+            $scadenza = (new DateTime())->add(new DateInterval('P4M'));
+            // var_dump($scadenza);
+            
+            $ULTIMO = new DateTime('2020-12-31');
+            
+            $diff = $scadenza->diff($ULTIMO);
+            // var_dump($diff);
+            
+            // se la data di scadenza dell'abbonamento supera
+            //  l'ultimo del mese
+            if($diff->invert == 1)
+                $scadenza = $ULTIMO;                    
+            
+            break;
+        }
+    }
+
+    nuovo_abbonamento($idcliente, $_GET["abbonamento"], $scadenza->format('Y-m-d'), $ingressi);
+    
+    $res = $conn->query("SELECT c.nome, c.cognome, DATE_FORMAT(a.dataInizio, '%d-%b-%y') as dataInizio,
+                                DATE_FORMAT(a.dataFine, '%d-%b-%y') as dataFine, a.ingressiRimanenti
+                            FROM cliente c inner join abbonamentoattivo a on c.id = a.idCliente
+                            WHERE c.id = $idcliente;");
+    
+    foreach($res as $row){
+        echo "$row[nome] $row[cognome] ha creato un abbonamento il giorno ".
+             "$row[dataInizio] con scadenza $row[dataFine]";
+
+    }
+
 
 }
 function op6(){
@@ -216,6 +312,9 @@ if(isset($_GET["fn"])){
 
         case 4:{
             op4();
+            break;}
+        case 5:{
+            op5();
             break;}
         case 6:{
             op6();
