@@ -84,7 +84,19 @@ function nuovo_vip($biglietto, $costo = 10){
     $stmt->execute();
 }
 
+function elimina_abbonamentoattivo($idAbbonamento){
 
+    global $conn;
+
+    // var_dump($idAbbonamento);
+
+    $stmt = $conn->prepare(RIMUOVI_ABBONAMENTO);
+    $stmt->bind_param("s",$idAbbonamento);
+    $stmt->execute();
+
+    // var_dump($stmt);
+
+}
 
 function ordina_biglietto($idcliente, &$biglietto, $usaAbbonamento = false){
 
@@ -104,15 +116,18 @@ function ordina_biglietto($idcliente, &$biglietto, $usaAbbonamento = false){
     // Se abbonato decrementa il numero di accessi all'abbonamento
     if ($usaAbbonamento && $has_abbonamento) {
 
-        // // Se il numero di accessi all'abbonamento sono esauriti restituisci un errore
-        // //  quindi domandare se comprare il biglietto al di fuori dell'abbonamento
-        // if ($clienteAbbonato["ingressiRimanenti"] == 0) {
-        //     header('Location: ..\errore_op1.php');
-        //     die();
-        // }
-
-        // Altrimenti decremento gli ingresi rimasti
+        
+        
+        // Decremento gli ingressi
         decrementa_ingressi_rimanenti($clienteAbbonato["idCliente"], $clienteAbbonato);
+        
+        // Se il numero di accessi all'abbonamento sono esauriti elimino l'abbonamento
+        //  oramai storicizzato tramite trigger
+        // var_dump($clienteAbbonato);
+        if (($clienteAbbonato["ingressiRimanenti"] - 1) == 0) {
+            elimina_abbonamentoattivo($idAbbonamento);
+        }
+
     }
 }
 function nuovo_cliente($cliente){
@@ -125,7 +140,7 @@ function nuovo_cliente($cliente){
         $cliente["nome"],
         $cliente["cognome"],
         $cliente["sesso"],
-        $cliente["eta"]
+        $cliente["data"]
     );
     $stmt->execute();
 

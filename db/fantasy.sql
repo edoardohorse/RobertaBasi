@@ -435,11 +435,10 @@ AFTER UPDATE ON abbonamentoattivo
 FOR EACH ROW
 BEGIN
   DECLARE costo float;
-  IF NEW.ingressiRimanenti = 0 THEN
+  IF NEW.ingressiRimanenti  = 0 THEN
     SELECT t.costo into costo FROM tipologia t WHERE t.id= new.idtipologia;
-    INSERT INTO storicoAbbonamento
-        VALUES (new.dataInizio, new.dataFine, costo, new.ingressiRimanenti,new.idCliente,new.idtipologia);
-    DELETE FROM abbonamentoattivo where id=new.id;
+    INSERT INTO storicoAbbonamento(dataInizio, dataFine, costo, ingressiRimanenti, idCliente, idtipologia)        VALUES (new.dataInizio, new.dataFine, costo, new.ingressiRimanenti,new.idCliente,new.idtipologia);
+    -- DELETE FROM abbonamentoattivo where id=new.id;
   END IF;
 
 END//
