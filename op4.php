@@ -7,57 +7,10 @@
 <html>
     <head>
         <meta charset="utf-8">
+        <link rel="stylesheet" href="css/main.css">
         
         <title>Operazione 4</title>
-        <style>
-      body{
-                background-color:rgb(196, 221, 255);
-                font-family: sans-serif;
-            }
-
-            main{
-                margin-top:150px;
-                margin-left: auto;
-                margin-right: auto;
-                position:relative;
-            }
-
-            
-
-            label{
-                width: auto;
-                text-align: right;
-                display: inline-block;
-                margin-top:15px;
-            }
-
-            input{
-                margin-right: 1em;
-            }
-
-            thead > tr{
-                text-transform: capitalize;
-            }
-
-            .hidden{
-                display:none;
-            }
-            #show{
-                cursor:pointer;
-            }
-
-            form{
-                border:1px solid grey;
-                padding: 1em;
-            }
-
-            tr:hover {
-                background-color: rgba(0,0,0,.3);
-            }
-
-            
-
-        </style>
+    
     </head>
     <body>
         <header>
@@ -113,12 +66,12 @@
                             
                             if($key == 'abbonato'){
                                 if($value > 0)
-                                    echo "<td style='border-left:1px solid black;text-align:center;'>Si</td>";
+                                    echo "<td>Si</td>";
                                 else
-                                    echo "<td style='border-left:1px solid black;text-align:center;'>No</td>";
+                                    echo "<td>No</td>";
                             }
                             else{
-                                echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";
+                                echo "<td>$value</td>";
                             }
                         }
                             

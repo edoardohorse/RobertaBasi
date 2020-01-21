@@ -9,55 +9,7 @@
         <meta charset="utf-8">
         
         <title>Operazione 1</title>
-        <style>
-            body{
-                background-color:rgb(196, 221, 255);
-                font-family: sans-serif;
-            }
-
-            main{
-                margin-top:150px;
-                margin-left: auto;
-                margin-right: auto;
-                position:relative;
-            }
-
-            
-
-            label{
-                width: auto;
-                text-align: right;
-                display: inline-block;
-                margin-top:15px;
-            }
-
-            input{
-                margin-right: 1em;
-            }
-
-            thead > tr{
-                text-transform: capitalize;
-            }
-
-            .hidden{
-                display:none;
-            }
-            #show{
-                cursor:pointer;
-            }
-
-            form{
-                border:1px solid grey;
-                padding: 1em;
-            }
-
-            tr:hover {
-                background-color: rgba(0,0,0,.3);
-            }
-
-            
-
-        </style>
+        <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
         <header>
@@ -67,7 +19,8 @@
         <main>
             <h1>Acquista biglietto</h1>
             <br>
-            <h3 id="show">1 - Scegli cliente</h3>
+            <h3>1 - Scegli cliente</h3>
+            <br>
             <div >
 
                 <table id="tabella">
@@ -108,12 +61,12 @@
                             }
                             if($key == 'abbonato'){
                                 if($value)
-                                    echo "<td style='border-left:1px solid black;text-align:center;'>Si</td>";
+                                    echo "<td>Si</td>";
                                 else
-                                    echo "<td style='border-left:1px solid black;text-align:center;'>No</td>";
+                                    echo "<td>No</td>";
                             }
                             else{
-                                echo "<td style='border-left:1px solid black;text-align:center;'>$value</td>";
+                                echo "<td>$value</td>";
                             }
                         }
                             echo "<td><button onclick='scegliUtente(this)'>Scegli</button></td>";
@@ -130,8 +83,9 @@
                 </table>
             </div>
 
-            <br>
+            <br><br><br>
             <h3>2 - Form biglietto</h3>
+            <br>
             <form action="php/main.php" method="GET" class="hidden" id="form">
                 <input name="fn" value=1 hidden=true>
                 
@@ -149,14 +103,16 @@
                     <label for="cognome">Cognome</label>
                     <input type="text" name="cognome">
                     
-                    <label for="quantità">Quantità</label>
-                    <input type="number" name="quantità" min=1 max=20 value="1">
+                    
                 </div>
             
                 <div class="row">
 
+                <label for="quantità">Quantità</label>
+                    <input type="number" name="quantità" min=1 max=20 value="1">
+
                     <label for="costo">Costo €</label>
-                    <input type="text" name="costo" required value="20">
+                    <input type="text" name="costo" style="width:50px;" required value="20">
                     
                     <label for="tipoPagamento">Tipo Pagamento</label>
                     <select name="tipoPagamento" required>
@@ -164,16 +120,16 @@
                         <option name="Carta">Carta</option>
                     </select>
                     
-                    <label for="luogoAcquisto">Luogo Acquisto</label>
-                    <select name="luogoAcquisto" required>
-                        <option name="Web">Web</option>
-                        <option name="Cassa">Cassa</option>
-                    </select>
+                    
                 </div>
 
                 <div class="row">
 
-                    
+                <label for="luogoAcquisto">Luogo Acquisto</label>
+                    <select name="luogoAcquisto" required>
+                        <option name="Web">Web</option>
+                        <option name="Cassa">Cassa</option>
+                    </select>
 
                     <label for="dataValidita">Data Validità</label>
                     <input type="date" name="dataValidita" required value="2020-01-20">
@@ -186,6 +142,7 @@
                 
                 <input type="submit" id="submit" style="margin-top:20px;">
             </form>
+            <br><br>
             <button id="annulla" class="hidden" onclick="nascondiForm()">Annulla</button>
 
         </main>
