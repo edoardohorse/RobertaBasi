@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Gen 18, 2020 alle 10:20
--- Versione del server: 10.1.36-MariaDB
--- Versione PHP: 7.2.11
+-- Creato il: Gen 21, 2020 alle 17:54
+-- Versione del server: 10.1.13-MariaDB
+-- Versione PHP: 7.2.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -28,6 +28,7 @@ SET time_zone = "+00:00";
 -- Struttura della tabella `abbonamentoattivo`
 --
 
+DROP TABLE IF EXISTS `abbonamentoattivo`;
 CREATE TABLE `abbonamentoattivo` (
   `id` int(11) NOT NULL,
   `dataInizio` date NOT NULL,
@@ -37,12 +38,39 @@ CREATE TABLE `abbonamentoattivo` (
   `idtipologia` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dump dei dati per la tabella `abbonamentoattivo`
+--
+
+INSERT INTO `abbonamentoattivo` (`id`, `dataInizio`, `dataFine`, `ingressiRimanenti`, `idCliente`, `idtipologia`) VALUES
+(1, '2020-01-18', '2020-02-29', 12, 1, 1),
+(23, '2020-01-20', '2020-12-31', 24, 37, 1);
+
+--
+-- Trigger `abbonamentoattivo`
+--
+DROP TRIGGER IF EXISTS `storicizzazioneAbbonamento`;
+DELIMITER $$
+CREATE TRIGGER `storicizzazioneAbbonamento` BEFORE UPDATE ON `abbonamentoattivo` FOR EACH ROW BEGIN
+  DECLARE costo float;
+  IF NEW.ingressiRimanenti  = 0 THEN
+    SELECT t.costo into costo FROM tipologia t WHERE t.id= new.idtipologia;
+    INSERT INTO storicoAbbonamento(dataInizio, dataFine, costo, ingressiRimanenti, idCliente, idtipologia)        VALUES (new.dataInizio, new.dataFine, costo, new.ingressiRimanenti,new.idCliente,new.idtipologia);
+    -- DELETE FROM abbonamentoattivo where id=new.id;
+  END IF;
+
+
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
 -- Struttura della tabella `accesso`
 --
 
+DROP TABLE IF EXISTS `accesso`;
 CREATE TABLE `accesso` (
   `idAttrazione` int(11) NOT NULL,
   `idVip` int(11) NOT NULL
@@ -54,6 +82,7 @@ CREATE TABLE `accesso` (
 -- Struttura della tabella `attrazione`
 --
 
+DROP TABLE IF EXISTS `attrazione`;
 CREATE TABLE `attrazione` (
   `id` int(11) NOT NULL,
   `nome` varchar(30) NOT NULL,
@@ -80,6 +109,7 @@ INSERT INTO `attrazione` (`id`, `nome`, `tipologia`, `longitudine`, `latitudine`
 -- Struttura della tabella `biglietto`
 --
 
+DROP TABLE IF EXISTS `biglietto`;
 CREATE TABLE `biglietto` (
   `id` int(11) NOT NULL,
   `costo` float NOT NULL,
@@ -89,7 +119,8 @@ CREATE TABLE `biglietto` (
   `luogoAcquisto` enum('Web','Cassa') NOT NULL DEFAULT 'Web',
   `TipoPagamento` enum('Contanti','Carta') DEFAULT NULL,
   `Validato` tinyint(1) DEFAULT '0',
-  `idCliente` int(11) NOT NULL
+  `idCliente` int(11) NOT NULL,
+  `idAbbonamento` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -98,11 +129,12 @@ CREATE TABLE `biglietto` (
 -- Struttura della tabella `cliente`
 --
 
+DROP TABLE IF EXISTS `cliente`;
 CREATE TABLE `cliente` (
   `id` int(11) NOT NULL,
   `nome` varchar(20) NOT NULL,
   `cognome` varchar(20) NOT NULL,
-  `eta` int(11) NOT NULL,
+  `dataNascita` date NOT NULL,
   `sesso` enum('M','F','Und') DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -110,13 +142,13 @@ CREATE TABLE `cliente` (
 -- Dump dei dati per la tabella `cliente`
 --
 
-INSERT INTO `cliente` (`id`, `nome`, `cognome`, `eta`, `sesso`) VALUES
-(1, 'Anna', 'Spagna', 45, 'F'),
-(2, 'Claudio', 'Angelastro', 33, 'M'),
-(3, 'Federico', 'Giuliani', 23, 'M'),
-(4, 'Sara', 'Gigli', 26, 'F'),
-(5, 'Francesco', 'Chiari', 38, 'M'),
-(6, 'Giovanna', 'Basile', 59, 'F');
+INSERT INTO `cliente` (`id`, `nome`, `cognome`, `dataNascita`, `sesso`) VALUES
+(1, 'Anna', 'Spagna', '0000-00-00', 'F'),
+(2, 'Claudio', 'Angelastro', '0000-00-00', 'M'),
+(4, 'Sara', 'Gigli', '0000-00-00', 'F'),
+(6, 'Giovanna', 'Basile', '0000-00-00', 'F'),
+(37, 'Edoardo', 'Cavallo', '0000-00-00', 'M'),
+(39, 'Rob', 'Della R', '0000-00-00', 'Und');
 
 -- --------------------------------------------------------
 
@@ -124,6 +156,7 @@ INSERT INTO `cliente` (`id`, `nome`, `cognome`, `eta`, `sesso`) VALUES
 -- Struttura della tabella `dipendente`
 --
 
+DROP TABLE IF EXISTS `dipendente`;
 CREATE TABLE `dipendente` (
   `id` int(11) NOT NULL,
   `nome` varchar(25) NOT NULL,
@@ -131,18 +164,19 @@ CREATE TABLE `dipendente` (
   `stipendio` float NOT NULL,
   `dataInizio` date NOT NULL,
   `dataFine` date NOT NULL,
-  `sesso` enum('M','F','Und') DEFAULT NULL
+  `sesso` enum('M','F','Und') DEFAULT NULL,
+  `dataNascita` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dump dei dati per la tabella `dipendente`
 --
 
-INSERT INTO `dipendente` (`id`, `nome`, `cognome`, `stipendio`, `dataInizio`, `dataFine`, `sesso`) VALUES
-(1, 'Claudio', 'Scialpi', 900, '2017-10-16', '2019-03-15', 'M'),
-(2, 'Serena', 'Giusti', 790, '2019-04-01', '2020-04-03', 'F'),
-(3, 'Angelo', 'De Michele', 1200, '2020-01-13', '2021-01-11', 'M'),
-(4, 'Stella', 'De Giorgi', 1100, '2019-07-01', '2020-05-29', 'F');
+INSERT INTO `dipendente` (`id`, `nome`, `cognome`, `stipendio`, `dataInizio`, `dataFine`, `sesso`, `dataNascita`) VALUES
+(1, 'Claudio', 'Scialpi', 900, '2017-10-16', '2019-03-15', 'M', '0000-00-00'),
+(2, 'Serena', 'Giusti', 790, '2019-04-01', '2020-04-03', 'F', '0000-00-00'),
+(3, 'Angelo', 'De Michele', 1200, '2020-01-13', '2021-01-11', 'M', '0000-00-00'),
+(4, 'Stella', 'De Giorgi', 1100, '2019-07-01', '2020-05-29', 'F', '0000-00-00');
 
 -- --------------------------------------------------------
 
@@ -150,10 +184,20 @@ INSERT INTO `dipendente` (`id`, `nome`, `cognome`, `stipendio`, `dataInizio`, `d
 -- Struttura della tabella `gestione`
 --
 
+DROP TABLE IF EXISTS `gestione`;
 CREATE TABLE `gestione` (
   `idDipendente` int(11) NOT NULL,
   `idAttrazione` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dump dei dati per la tabella `gestione`
+--
+
+INSERT INTO `gestione` (`idDipendente`, `idAttrazione`) VALUES
+(1, 1),
+(1, 2),
+(3, 1);
 
 -- --------------------------------------------------------
 
@@ -161,6 +205,7 @@ CREATE TABLE `gestione` (
 -- Struttura della tabella `inclusione`
 --
 
+DROP TABLE IF EXISTS `inclusione`;
 CREATE TABLE `inclusione` (
   `idAbbonamento` int(11) NOT NULL,
   `idBiglietto` int(11) NOT NULL
@@ -172,6 +217,7 @@ CREATE TABLE `inclusione` (
 -- Struttura della tabella `storicoabbonamento`
 --
 
+DROP TABLE IF EXISTS `storicoabbonamento`;
 CREATE TABLE `storicoabbonamento` (
   `id` int(11) NOT NULL,
   `dataInizio` date NOT NULL,
@@ -182,18 +228,26 @@ CREATE TABLE `storicoabbonamento` (
   `idtipologia` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dump dei dati per la tabella `storicoabbonamento`
+--
+
+INSERT INTO `storicoabbonamento` (`id`, `dataInizio`, `dataFine`, `costo`, `ingressiRimanenti`, `idCliente`, `idtipologia`) VALUES
+(20, '2020-01-21', '2020-05-21', 200, 0, 39, 2);
+
 -- --------------------------------------------------------
 
 --
 -- Struttura della tabella `tipologia`
 --
 
+DROP TABLE IF EXISTS `tipologia`;
 CREATE TABLE `tipologia` (
   `id` int(11) NOT NULL,
   `nome` varchar(30) NOT NULL,
   `annoCreazione` int(4) NOT NULL,
   `costo` float NOT NULL,
-  `ingressiTotali` int(11) NOT NULL
+  `ingressiTotali` int(11) NOT NULL,
   `durata` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -201,9 +255,9 @@ CREATE TABLE `tipologia` (
 -- Dump dei dati per la tabella `tipologia`
 --
 
-INSERT INTO `tipologia` (`id`, `nome`, `annoCreazione`, `costo`, `ingressiTotali`) VALUES
-(1, 'Annuale', 2017, 480, 30),
-(2, 'Quadrimestrale', 2019, 200, 15);
+INSERT INTO `tipologia` (`id`, `nome`, `annoCreazione`, `costo`, `ingressiTotali`, `durata`) VALUES
+(1, 'Annuale', 2017, 480, 30, 0),
+(2, 'Quadrimestrale', 2019, 200, 15, 0);
 
 -- --------------------------------------------------------
 
@@ -211,6 +265,7 @@ INSERT INTO `tipologia` (`id`, `nome`, `annoCreazione`, `costo`, `ingressiTotali
 -- Struttura della tabella `vip`
 --
 
+DROP TABLE IF EXISTS `vip`;
 CREATE TABLE `vip` (
   `id` int(11) NOT NULL,
   `dataValidita` date NOT NULL,
@@ -252,7 +307,8 @@ ALTER TABLE `attrazione`
 --
 ALTER TABLE `biglietto`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idCliente` (`idCliente`);
+  ADD KEY `idCliente` (`idCliente`),
+  ADD KEY `idAbbonamento` (`idAbbonamento`);
 
 --
 -- Indici per le tabelle `cliente`
@@ -309,7 +365,7 @@ ALTER TABLE `vip`
 -- AUTO_INCREMENT per la tabella `abbonamentoattivo`
 --
 ALTER TABLE `abbonamentoattivo`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT per la tabella `attrazione`
@@ -321,13 +377,13 @@ ALTER TABLE `attrazione`
 -- AUTO_INCREMENT per la tabella `biglietto`
 --
 ALTER TABLE `biglietto`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
 -- AUTO_INCREMENT per la tabella `cliente`
 --
 ALTER TABLE `cliente`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT per la tabella `dipendente`
@@ -339,7 +395,7 @@ ALTER TABLE `dipendente`
 -- AUTO_INCREMENT per la tabella `storicoabbonamento`
 --
 ALTER TABLE `storicoabbonamento`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT per la tabella `tipologia`
@@ -351,7 +407,7 @@ ALTER TABLE `tipologia`
 -- AUTO_INCREMENT per la tabella `vip`
 --
 ALTER TABLE `vip`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Limiti per le tabelle scaricate
@@ -375,7 +431,8 @@ ALTER TABLE `accesso`
 -- Limiti per la tabella `biglietto`
 --
 ALTER TABLE `biglietto`
-  ADD CONSTRAINT `biglietto_ibfk_1` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `biglietto_ibfk_1` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `biglietto_ibfk_3` FOREIGN KEY (`idAbbonamento`) REFERENCES `abbonamentoattivo` (`id`) ON DELETE CASCADE;
 
 --
 -- Limiti per la tabella `gestione`
@@ -408,38 +465,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-
-/* DELIMITER //
-CREATE TRIGGER storicizzazioneAbbonamento AFTER UPDATE
-ON
-    abbonamentoattivo FOR EACH ROW
-
-    SET @costo = 0;
-
-  	IF NEW.ingressiRimanenti = 0 THEN
-    	
-    	INSER INTO storicoabbonamento(dataInizio, dataFine, costo, ingressiRimanenti, idCliente, idtipologia)
-      		VALUES(NEW.dataInizio, NEW.dataFine, costo, NEW.ingressiRimanenti, NEW.idCliente, NEW.idtipologia);
-    
-      	DELETE FROM abbonamentoattivo WHERE id = NEw.id
-  	END IF
-END;
-
-
- */
-
-DELIMITER //
-CREATE TRIGGER storicizzazioneAbbonamento
-AFTER UPDATE ON abbonamentoattivo
-FOR EACH ROW
-BEGIN
-  DECLARE costo float;
-  IF NEW.ingressiRimanenti  = 0 THEN
-    SELECT t.costo into costo FROM tipologia t WHERE t.id= new.idtipologia;
-    INSERT INTO storicoAbbonamento(dataInizio, dataFine, costo, ingressiRimanenti, idCliente, idtipologia)        VALUES (new.dataInizio, new.dataFine, costo, new.ingressiRimanenti,new.idCliente,new.idtipologia);
-    -- DELETE FROM abbonamentoattivo where id=new.id;
-  END IF;
-
-END//
-DELIMITER ;
