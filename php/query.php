@@ -86,5 +86,21 @@ const PRENDI_CLIENTI_ABBONATI2 = "SELECT c.*, a.id as abbonato,
 
 // ----------------- FINE OPERAZIONE 6
 
+// ----------------- OPERAZIONE 7
+
+
+const PRENDI_ATTRAZIONI = "SELECT * FROM attrazione";
+
+const PRENDI_DIPENDENTI = "SELECT * FROM dipendente";
+
+const PRENDI_DIPENDENTE_CON_ATTRAZIONE = "SELECT nome FROM attrazione a inner join gestione g
+                                        on a.id = g.idAttrazione
+                                        WHERE g.idDipendente = ? ";
+
+const AGGIUNGI_GESTIONE = "INSERT INTO gestione(idDipendente, idAttrazione)
+                            VALUES( ?, ?)";
+
+// ----------------- FINE OPERAZIONE 7
+
 ?>
 

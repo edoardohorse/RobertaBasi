@@ -30,7 +30,6 @@ function op1(){
 
         // Se il pagamento coinvolge più di 15 biglietti allora questi hanno 
         //  l'accesso VIP
-        
             if($ordine_vip){
                 // Inserimento un nuovo vip con costo uguale a 0
                 nuovo_vip($biglietto, 0);
@@ -161,9 +160,47 @@ function op6(){
 
 }
 
+function op7(){
+    global $conn; 
+
+    // Scelto dipendente
+    $idDip = $_GET['dipendente'];
+    
+    // Per quante attrazioni ho selezionato
+    for($i=0; $i< count($_GET['attrazione']); $i++){
+
+        // Assegno al dipedente la gestione di queste
+        assegna_giostra($idDip, $_GET['attrazione'][$i]);
+
+    }
+
+    $res = $conn->query("SELECT * FROM dipendente WHERE id=$idDip");
+    $dipendente = null;
+    foreach($res as $row){
+        $dipendente = $row;
+    }
+
+    $stmt = $conn->prepare(PRENDI_DIPENDENTE_CON_ATTRAZIONE);
+    $stmt->bind_param("s",$idDip);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    $attrazioni = array();
+
+    foreach($res as $row){
+        array_push($attrazioni, $row);
+    }
+
+    echo "$dipendente[nome] $dipendente[cognome] è stato/a associato/a alle attrazioni: ";
+    // var_dump($attrazioni);
+    foreach($attrazioni as $a){
+        echo "<br>- $a[nome]";
+    }
+
+}
+
 
 if(isset($_GET["fn"])){
-
 
     $fn = $_GET["fn"];
     switch($fn){
@@ -184,6 +221,9 @@ if(isset($_GET["fn"])){
             break;}
         case 6:{
             op6();
+            break;}
+        case 7:{
+            op7();
             break;}
     }
 }
