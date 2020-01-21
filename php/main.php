@@ -4,129 +4,7 @@ include_once('connect.php');
 include_once('query.php');
 include_once('fn.php');
 
-function fetch_clienti(){
-    global $conn;
 
-    $stmt = $conn->prepare(PRENDI_CLIENTI);
-    $stmt->execute();
-    return $stmt;
-}
-
-function check_cliente_abbonato($idcliente, &$clienteAbbonato){
-
-    global $conn;
-    $stmt = $conn->prepare(CONTROLLO_CLIENTE_ABBONATO);
-    $stmt->bind_param("s", $idcliente);
-    $stmt->execute();
-
-    $res = $stmt->get_result();
-    foreach($res as $key=>$value){
-        $clienteAbbonato = $value;
-    }
-    // var_dump($clienteAbbonato);
-
-    return ($stmt->affected_rows == 1)? true: false;
-}
-
-function decrementa_ingressi_rimanenti($idcliente){
-    
-    global $conn;
-
-    $stmt = $conn->prepare(DECREMENTA_INGRESSI_RIMANENTI);
-    $stmt->bind_param("s", $idcliente);
-    $stmt->execute();
-
-
-}
-
-function nuovo_biglietto($idcliente, &$biglietto){
-
-    global $conn;
-
-    $stmt = $conn->prepare(NUOVO_BIGLIETTO);
-    $biglietto['validato']  = $biglietto['validato'] == true ? true: false;
-    // var_dump($biglietto);
-    $stmt->bind_param("ssssssbs",
-                    $biglietto["costo"],
-                    $biglietto["dataValidita"],
-                    $biglietto["dataAcquisto"],
-                    $biglietto["oraAcquisto"],
-                    $biglietto["luogoAcquisto"],
-                    $biglietto["tipoPagamento"],
-                    $biglietto["validato"],
-                    $idcliente
-                );
-    $stmt->execute();
-
-    $biglietto['id'] = $stmt->insert_id;
-    // var_dump($biglietto);
-    // var_dump($stmt->insert_id);
-
-}
-
-function nuovo_vip($biglietto, $costo = 10){
-
-    global $conn;
-
-    $stmt = $conn->prepare(NUOVO_VIP);
-    // var_dump($biglietto);
-    $stmt->bind_param("sssss",
-                    $costo,
-                    $biglietto["dataValidita"],
-                    $biglietto["dataAcquisto"],
-                    $biglietto["oraAcquisto"],
-                    $biglietto["id"]
-                );
-    
-    $stmt->execute();
-}
-
-function associa_biglietto_ad_abbonamento($idabbonamento, $idbiglietto){
-    global $conn;
-
-    $stmt = $conn->prepare(ASSOCIO_BIGLIETTO);
-    $stmt->bind_param("ss",
-                    $idabbonamento,
-                    $idbiglietto
-                );
-    $stmt->execute();
-}
-
-function ordina_biglietto($idcliente, &$biglietto){
-
-    global $conn;
-
-    $clienteAbbonato = null;
-
-    // Inserimento dati relativi al biglietto
-    nuovo_biglietto($idcliente, $biglietto);
-
-    // Scelto il cliente vedere se abbonato
-    $is_abbonato = check_cliente_abbonato( $idcliente , $clienteAbbonato );
-    // echo "Abbonato: ". var_dump($is_abbonato);
-    // var_dump($biglietto);
-    // die();
-
-    // Se abbonato decrementa il numero di accessi all'abbonamento
-    if($is_abbonato){    
-        
-        // Se il numero di accessi all'abbonamento sono esauriti restituisci un errore
-        //  quindi domandare se comprare il biglietto al di fuori dell'abbonamento
-        if($clienteAbbonato["ingressiRimanenti"] == 0){
-            location("errore_op1.php");
-            die();
-        }
-        
-        // Altrimenti decremento gli ingresi rimasti
-        decrementa_ingressi_rimanenti($clienteAbbonato["idCliente"], $clienteAbbonato);
-
-        // Associo il biglietto all'abbonamento
-        associa_biglietto_ad_abbonamento($clienteAbbonato["id"], $biglietto["id"]);
-        
-        
-    }
-    
-}
 
 function op1(){
 
@@ -134,6 +12,10 @@ function op1(){
 
     $idcliente = $_GET["cliente"];
     $biglietto = $_GET;
+    $is_abbonato = false;
+
+    
+    
     
     $biglietto["quantità"]  = (int) $biglietto["quantità"];
     $ordine_vip = $biglietto["quantità"] > 15? true : false;
@@ -144,7 +26,7 @@ function op1(){
     for($i=0;$i < $biglietto["quantità"]; $i++){
 
 
-        ordina_biglietto($idcliente, $biglietto);
+        ordina_biglietto($idcliente, $biglietto, $_GET["abbonamento"]);
 
         // Se il pagamento coinvolge più di 15 biglietti allora questi hanno 
         //  l'accesso VIP
@@ -188,53 +70,6 @@ function op4(){
 }
 
 
-function nuovo_cliente($cliente){
-
-    global $conn;
-
-    $stmt = $conn->prepare(NUOVO_CLIENTE);
-    $stmt->bind_param("sssd", 
-                        $cliente["nome"],
-                        $cliente["cognome"],
-                        $cliente["sesso"],
-                        $cliente["eta"]
-                    );
-    $stmt->execute();
-
-    return $stmt->insert_id;
-}
-
-function nuovo_abbonamento($idcliente, $tipoabbonamento, $dataFine, $ingressi){
-    global $conn;
-    // var_dump($idcliente, $tipoabbonamento, $ingressi, $dataFine);
-    $stmt = $conn->prepare(NUOVO_ABBONAMENTO);
-    $stmt->bind_param("ssss", 
-                        $dataFine,
-                        $ingressi,
-                        $idcliente,
-                        $tipoabbonamento
-                    );
-    $stmt->execute();
-
-    return $stmt->insert_id;
-}
-
-function tipologie_abbonamento(){
-
-    global $conn;
-
-    $stmt = $conn->prepare(TIPOLOGIA_ABBONAMENTI);
-    $stmt->execute();
-
-    $res = $stmt->get_result();
-
-    $ar = array();
-
-    foreach($res as $key=>$row){
-        array_push($ar, $row);
-    }
-    return $ar;
-}
 
 function op5(){
 
@@ -298,21 +133,29 @@ function op6(){
     $idcliente = $_GET['id'];
     $idabbonamento = $_GET['abbonato'];
 
-    decrementa_ingressi_rimanenti($idcliente);
+    
     $biglietto = [];
     $biglietto["costo"]         = 0;
     $biglietto["dataValidita"]  = (new DateTime())->format('Y-m-d');
     $biglietto["dataAcquisto"]  = (new DateTime())->format('Y-m-d');
     $biglietto["oraAcquisto"]   = (new DateTime())->format('H:i');
     $biglietto["luogoAcquisto"] = 'Cassa';
-    $biglietto["tipoPagamento"] = 'Carta';
+    $biglietto["tipoPagamento"] = 'Contanti';
     $biglietto["validato"]      = true;
 
-    nuovo_biglietto($idcliente, $biglietto);
-    var_dump($biglietto);
-    associa_biglietto_ad_abbonamento($idabbonamento, $biglietto['id']);
+    ordina_biglietto($idcliente, $biglietto, true);
+
+    $res = $conn->query("SELECT * FROM cliente WHERE id=$idcliente");
+    $cliente = null;
+    foreach($res as $row){
+        $cliente = $row;
+    }
+
+    echo "$row[nome] $row[cognome] ha acquistato un biglietto (codice: $biglietto[id]) con scadenza".
+        " il $biglietto[dataValidita] al costo di $biglietto[costo]€";
     
-    echo "Fatto";
+    
+    // echo ;
     
     
 
@@ -325,9 +168,11 @@ if(isset($_GET["fn"])){
     $fn = $_GET["fn"];
     switch($fn){
         case 1:{
-            if(!isset($_GET['abbonamento'])){
+            if(isset($_GET['abbonamento'])){
                 $_GET['abbonamento'] = true;
             }
+            else
+                $_GET['abbonamento'] = false;
             op1();
             break;}
 
