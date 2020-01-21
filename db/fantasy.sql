@@ -408,3 +408,39 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+/* DELIMITER //
+CREATE TRIGGER storicizzazioneAbbonamento AFTER UPDATE
+ON
+    abbonamentoattivo FOR EACH ROW
+
+    SET @costo = 0;
+
+  	IF NEW.ingressiRimanenti = 0 THEN
+    	
+    	INSER INTO storicoabbonamento(dataInizio, dataFine, costo, ingressiRimanenti, idCliente, idtipologia)
+      		VALUES(NEW.dataInizio, NEW.dataFine, costo, NEW.ingressiRimanenti, NEW.idCliente, NEW.idtipologia);
+    
+      	DELETE FROM abbonamentoattivo WHERE id = NEw.id
+  	END IF
+END;
+
+
+ */
+
+DELIMITER //
+CREATE TRIGGER storicizzazioneAbbonamento
+AFTER UPDATE ON abbonamentoattivo
+FOR EACH ROW
+BEGIN
+  DECLARE costo float;
+  IF NEW.ingressiRimanenti = 0 THEN
+    SELECT t.costo into costo FROM tipologia t WHERE t.id= new.idtipologia;
+    INSERT INTO storicoAbbonamento
+        VALUES (new.dataInizio, new.dataFine, costo, new.ingressiRimanenti,new.idCliente,new.idtipologia);
+    DELETE FROM abbonamentoattivo where id=new.id;
+  END IF;
+
+END//
+DELIMITER ;

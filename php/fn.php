@@ -42,8 +42,9 @@ function nuovo_biglietto($idcliente, &$biglietto, $idAbbonamento = null){
     $biglietto['validato']  = $biglietto['validato'] == true ? 1 : 0;
     // var_dump($biglietto);
 
-    $dataAcquisto = (new DateTime)->format("Y-m-d");
-    $oraAcquisto = (new DateTime)->format("H:i");
+    $now = new DateTime;
+    $dataAcquisto = $now->format("Y-m-d");
+    $oraAcquisto = $now->format("H:i");
 
     $stmt->bind_param(
         "ssssssdss",
