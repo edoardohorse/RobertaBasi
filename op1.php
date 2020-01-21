@@ -173,14 +173,11 @@
 
                 <div class="row">
 
-                    <label for="dataAcquisto">Data Acquisto</label>
-                    <input type="date" name="dataAcquisto" required value="2020-01-18">
+                    
 
                     <label for="dataValidita">Data Validità</label>
                     <input type="date" name="dataValidita" required value="2020-01-20">
                     
-                    <label for="oraAcquisto">Ora Acquisto</label>
-                    <input type="time" name="oraAcquisto" required value="10:00">
 
                 </div>
                 

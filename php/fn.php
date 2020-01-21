@@ -41,12 +41,16 @@ function nuovo_biglietto($idcliente, &$biglietto, $idAbbonamento = null){
     $stmt = $conn->prepare(NUOVO_BIGLIETTO);
     $biglietto['validato']  = $biglietto['validato'] == true ? 1 : 0;
     // var_dump($biglietto);
+
+    $dataAcquisto = (new DateTime)->format("Y-m-d");
+    $oraAcquisto = (new DateTime)->format("H:i");
+
     $stmt->bind_param(
         "ssssssdss",
         $biglietto["costo"],
         $biglietto["dataValidita"],
-        $biglietto["dataAcquisto"],
-        $biglietto["oraAcquisto"],
+        $dataAcquisto,
+        $oraAcquisto,
         $biglietto["luogoAcquisto"],
         $biglietto["tipoPagamento"],
         $biglietto["validato"],
@@ -99,12 +103,12 @@ function ordina_biglietto($idcliente, &$biglietto, $usaAbbonamento = false){
     // Se abbonato decrementa il numero di accessi all'abbonamento
     if ($usaAbbonamento && $has_abbonamento) {
 
-        // Se il numero di accessi all'abbonamento sono esauriti restituisci un errore
-        //  quindi domandare se comprare il biglietto al di fuori dell'abbonamento
-        if ($clienteAbbonato["ingressiRimanenti"] == 0) {
-            header('Location: ..\errore_op1.php');
-            die();
-        }
+        // // Se il numero di accessi all'abbonamento sono esauriti restituisci un errore
+        // //  quindi domandare se comprare il biglietto al di fuori dell'abbonamento
+        // if ($clienteAbbonato["ingressiRimanenti"] == 0) {
+        //     header('Location: ..\errore_op1.php');
+        //     die();
+        // }
 
         // Altrimenti decremento gli ingresi rimasti
         decrementa_ingressi_rimanenti($clienteAbbonato["idCliente"], $clienteAbbonato);

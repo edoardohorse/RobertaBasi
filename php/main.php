@@ -136,8 +136,6 @@ function op6(){
     $biglietto = [];
     $biglietto["costo"]         = 0;
     $biglietto["dataValidita"]  = (new DateTime())->format('Y-m-d');
-    $biglietto["dataAcquisto"]  = (new DateTime())->format('Y-m-d');
-    $biglietto["oraAcquisto"]   = (new DateTime())->format('H:i');
     $biglietto["luogoAcquisto"] = 'Cassa';
     $biglietto["tipoPagamento"] = 'Contanti';
     $biglietto["validato"]      = true;
