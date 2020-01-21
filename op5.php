@@ -31,8 +31,8 @@
                     <label for="cognome">Cognome</label>
                     <input type="text" name="cognome">
                     
-                    <label for="eta">Età</label>
-                    <input type="number" name="eta" min=10 max=90>
+                    <label for="data">Data di nascita</label>
+                    <input type="date" name="data">
 
                     <label for="sesso">Sesso</label>
                     <select name="sesso">

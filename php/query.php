@@ -20,6 +20,7 @@ const DECREMENTA_INGRESSI_RIMANENTI = "UPDATE abbonamentoattivo
 const NUOVO_BIGLIETTO = "INSERT INTO biglietto(costo, dataValidita, dataAcquisto, oraAcquisto, luogoAcquisto, TipoPagamento, Validato, idcliente, idAbbonamento)
                             VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
+const RIMUOVI_ABBONAMENTO = "DELETE FROM abbonamentoattivo WHERE id = ?";
 
 const NUOVO_VIP = "INSERT INTO vip(costo, dataValidita, dataAcquisto, oraAcquisto, idBiglietto, accessiRimanenti)
                      VALUES(?, ?, ?, ?, ?, 20)";
@@ -64,7 +65,7 @@ const N_ACCESSI_USATI         = "SELECT c.nome, c.cognome, (t.ingressiTotali - a
 
 // ----------------- OPERAZIONE 5
 
-const NUOVO_CLIENTE = "INSERT INTO cliente(nome, cognome, sesso, eta)
+const NUOVO_CLIENTE = "INSERT INTO cliente(nome, cognome, sesso, dataNascita)
                             VALUE(?, ?, ?, ? )";
                             
                             
