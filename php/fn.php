@@ -46,6 +46,14 @@ function nuovo_biglietto($idcliente, &$biglietto, $idAbbonamento = null){
     $dataAcquisto = $now->format("Y-m-d");
     $oraAcquisto = $now->format("H:i");
 
+    $validato = false;
+
+    if($dataAcquisto == $biglietto['dataValidita']){
+        $validato = true;
+    }
+
+    // var_dump($dataAcquisto, $biglietto['dataValidita'], $validato);
+    
     $stmt->bind_param(
         "ssssssdss",
         $biglietto["costo"],
@@ -54,7 +62,7 @@ function nuovo_biglietto($idcliente, &$biglietto, $idAbbonamento = null){
         $oraAcquisto,
         $biglietto["luogoAcquisto"],
         $biglietto["tipoPagamento"],
-        $biglietto["validato"],
+        $validato,
         $idcliente,
         $idAbbonamento
     );
@@ -108,15 +116,15 @@ function ordina_biglietto($idcliente, &$biglietto, $usaAbbonamento = false){
 
     $has_abbonamento = check_cliente_abbonato($idcliente, $clienteAbbonato, $idAbbonamento);
 
-    // Inserimento dati relativi al biglietto
-    nuovo_biglietto($idcliente, $biglietto, $idAbbonamento);
+    
 
 
 
     // Se abbonato decrementa il numero di accessi all'abbonamento
     if ($usaAbbonamento && $has_abbonamento) {
 
-        
+        // Inserimento dati relativi al biglietto
+        nuovo_biglietto($idcliente, $biglietto, $idAbbonamento);    
         
         // Decremento gli ingressi
         decrementa_ingressi_rimanenti($clienteAbbonato["idCliente"], $clienteAbbonato);
@@ -128,6 +136,10 @@ function ordina_biglietto($idcliente, &$biglietto, $usaAbbonamento = false){
             elimina_abbonamentoattivo($idAbbonamento);
         }
 
+    }
+    else{
+        // Inserimento dati relativi al biglietto se non uso l'abbonamento
+        nuovo_biglietto($idcliente, $biglietto, null);
     }
 }
 function nuovo_cliente($cliente){

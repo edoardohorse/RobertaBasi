@@ -19,13 +19,15 @@ function op1(){
     
     $biglietto["quantità"]  = (int) $biglietto["quantità"];
     $ordine_vip = $biglietto["quantità"] > 15? true : false;
+    // var_dump($_GET);
+    // die();
     
     
 
     // Creo tot biglietti quanto specificato
     for($i=0;$i < $biglietto["quantità"]; $i++){
 
-
+        
         ordina_biglietto($idcliente, $biglietto, $_GET["abbonamento"]);
 
         // Se il pagamento coinvolge più di 15 biglietti allora questi hanno 
