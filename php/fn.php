@@ -46,6 +46,9 @@ function nuovo_biglietto($idcliente, &$biglietto, $idAbbonamento = null){
     $dataAcquisto = $now->format("Y-m-d");
     $oraAcquisto = $now->format("H:i");
 
+    $biglietto['dataAcquisto'] = $dataAcquisto;
+    $biglietto['oraAcquisto'] = $oraAcquisto;
+
     $validato = false;
 
     if($dataAcquisto == $biglietto['dataValidita']){
