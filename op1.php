@@ -132,7 +132,7 @@
                     </select>
 
                     <label for="dataValidita">Data Validità</label>
-                    <input type="date" name="dataValidita" required value="2020-01-20">
+                    <input type="date" name="dataValidita" required>
                     
 
                 </div>
@@ -148,6 +148,13 @@
         </main>
     </body>
     <script>
+        let date =  new Date()
+        if(date.getMonth()+1 < 10){
+            document.getElementsByName("dataValidita")[0].min = `${date.getFullYear()}-0${date.getMonth()+1}-${date.getDate()}`;
+        }
+        else
+            document.getElementsByName("dataValidita")[0].min = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+
         var tabella             = document.getElementById("tabella")
         var form                = document.getElementById("form")
         var annullaBtn          = document.getElementById("annulla")
